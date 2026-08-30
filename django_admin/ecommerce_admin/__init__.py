@@ -1,0 +1,1 @@
+"""Ecommerce admin application package."""

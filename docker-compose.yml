@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  fastapi_backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.fastapi
+    container_name: smart_ecommerce_fastapi
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./ecommerce.db
+      - JWT_SECRET_KEY=change_this_secret
+      - STRIPE_SECRET_KEY=
+      - STRIPE_WEBHOOK_SECRET=
+    volumes:
+      - ./project-root/ecommerce.db:/app/ecommerce.db
+    restart: unless-stopped
+
+  django_admin:
+    build:
+      context: .
+      dockerfile: Dockerfile.django
+    container_name: smart_ecommerce_django
+    ports:
+      - "8002:8002"
+    environment:
+      - DJANGO_SECRET_KEY=django-insecure-prod-key
+    volumes:
+      - ./project-root/ecommerce.db:/app/../project-root/ecommerce.db
+    depends_on:
+      - fastapi_backend
+    restart: unless-stopped
