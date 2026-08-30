@@ -1,6 +1,11 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from .models import User, Product, Cart, CartItem, Order, OrderItem, Payment, Notification
+try:
+    from .emails import send_shipping_update_email
+except ImportError:
+    def send_shipping_update_email(*args, **kwargs):
+        pass
 
 
 @admin.register(User)
@@ -157,13 +162,37 @@ class OrderAdmin(admin.ModelAdmin):
 
     @admin.action(description="Mark status: Shipped")
     def mark_as_shipped(self, request, queryset):
-        queryset.update(order_status="shipped")
+        for order in queryset:
+            order.order_status = "shipped"
+            order.save()
+            Notification.objects.create(
+                user=order.user,
+                type="order_shipped",
+                message=f"Order #{order.id} has been shipped.",
+            )
+            try:
+                send_shipping_update_email(order.user.email, order.id, "shipped")
+            except Exception:
+                pass
         self.message_user(request, f"{queryset.count()} order(s) marked as Shipped.")
+
 
     @admin.action(description="Mark status: Delivered")
     def mark_as_delivered(self, request, queryset):
-        queryset.update(order_status="delivered")
+        for order in queryset:
+            order.order_status = "delivered"
+            order.save()
+            Notification.objects.create(
+                user=order.user,
+                type="order_delivered",
+                message=f"Order #{order.id} has been delivered.",
+            )
+            try:
+                send_shipping_update_email(order.user.email, order.id, "delivered")
+            except Exception:
+                pass
         self.message_user(request, f"{queryset.count()} order(s) marked as Delivered.")
+
 
     @admin.action(description="Mark status: Cancelled")
     def mark_as_cancelled(self, request, queryset):
