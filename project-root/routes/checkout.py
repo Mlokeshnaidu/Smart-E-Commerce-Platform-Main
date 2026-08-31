@@ -1,4 +1,6 @@
-﻿from fastapi import APIRouter, Depends, HTTPException, Request
+from typing import List
+
+from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.orm import Session
 
 from core.database import get_db
@@ -8,7 +10,7 @@ from models.notification import Notification
 from models.order import Order, OrderItem, OrderStatus, PaymentStatus
 from models.payment import Payment, PaymentTransactionStatus
 from models.user import User
-from schemas.order import CheckoutResponse
+from schemas.order import CheckoutResponse, OrderOut
 from utils.stripe_service import create_checkout_session, construct_webhook_event
 from utils.email_service import send_order_confirmation_email, send_payment_status_email
 from utils.websocket_manager import manager
@@ -121,3 +123,13 @@ async def stripe_webhook(request: Request, db: Session = Depends(get_db)):
             db.commit()
 
     return {"received": True}
+
+
+@router.get("/orders", response_model=List[OrderOut])
+def list_my_orders(db=Depends(get_db), current_user: User = Depends(get_current_user)):
+    return (
+        db.query(Order)
+        .filter(Order.user_id == current_user.id)
+        .order_by(Order.created_at.desc())
+        .all()
+    )

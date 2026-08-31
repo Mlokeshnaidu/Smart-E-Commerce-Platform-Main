@@ -239,7 +239,7 @@ function renderCart(cart) {
         <div class="cart-item">
             <div class="cart-item-info">
                 <div class="cart-item-title">${item.product.name}</div>
-                <div class="cart-item-price">$${item.product.price.toFixed(2)} × ${item.quantity} = <strong>$${item.item_total.toFixed(2)}</strong></div>
+                <div class="cart-item-price">$${item.product.price.toFixed(2)} Ã— ${item.quantity} = <strong>$${item.item_total.toFixed(2)}</strong></div>
             </div>
             <div class="cart-qty-controls">
                 <button class="qty-btn" onclick="updateCartItem(${item.product.id}, ${item.quantity - 1})">-</button>
@@ -313,7 +313,7 @@ async function initiateCheckout() {
     }
     const btn = document.getElementById("checkoutBtn");
     btn.disabled = true;
-    btn.innerText = "⏳ Processing Stripe Checkout...";
+    btn.innerText = "â³ Processing Stripe Checkout...";
 
     try {
         const res = await fetch(`${API_URL}/checkout`, {
@@ -338,7 +338,7 @@ async function initiateCheckout() {
         console.error(e);
     } finally {
         btn.disabled = false;
-        btn.innerText = "💳 Proceed to Stripe Checkout";
+        btn.innerText = "ðŸ’³ Proceed to Stripe Checkout";
     }
 }
 
@@ -380,7 +380,7 @@ function initWebSocket() {
             const msg = JSON.parse(event.data);
             console.log("WebSocket event:", msg);
             if (msg.event === "order_status_updated") {
-                showToast(`🔔 Order #${msg.data.order_id} updated: ${msg.data.status.toUpperCase()}`, "info");
+                showToast(`ðŸ”” Order #${msg.data.order_id} updated: ${msg.data.status.toUpperCase()}`, "info");
                 fetchNotifications();
             } else if (msg.event === "cart_updated") {
                 renderCart(msg.data);
@@ -443,8 +443,8 @@ function showToast(message, type = "info") {
     const toast = document.createElement("div");
     toast.className = "toast";
     
-    const icons = { success: "✅", danger: "❌", warning: "⚠️", info: "⚡" };
-    toast.innerHTML = `<span>${icons[type] || '⚡'}</span> <span>${message}</span>`;
+    const icons = { success: "âœ…", danger: "âŒ", warning: "âš ï¸", info: "âš¡" };
+    toast.innerHTML = `<span>${icons[type] || 'âš¡'}</span> <span>${message}</span>`;
     container.appendChild(toast);
 
     setTimeout(() => {
@@ -503,6 +503,95 @@ async function handleAuthSubmit(event) {
             closeAuthModal();
         } else {
             showToast(data.detail || "Authentication failed", "danger");
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// Orders & Returns
+async function fetchOrders() {
+    if (!currentToken) return;
+    try {
+        const res = await fetch(`${API_URL}/orders`, {
+            headers: { "Authorization": `Bearer ${currentToken}` }
+        });
+        if (res.ok) {
+            const orders = await res.json();
+            renderOrders(orders);
+        }
+    } catch (e) {
+        console.error("Failed to load orders:", e);
+    }
+}
+
+function renderOrders(orders) {
+    const container = document.getElementById("ordersListContainer");
+    if (!orders || orders.length === 0) {
+        container.innerHTML = `<p class="empty-state">No orders yet.</p>`;
+        return;
+    }
+
+    container.innerHTML = orders.map(o => {
+        const canReturn = o.order_status === "delivered";
+        const statusClass = o.order_status === "return_requested" ? "low-stock" : "in-stock";
+        const statusLabel = o.order_status.replace(/_/g, " ").toUpperCase();
+        return `
+            <div class="cart-item">
+                <div class="cart-item-info">
+                    <div class="cart-item-title">Order #${o.id}</div>
+                    <div class="cart-item-price">$${o.total.toFixed(2)} &middot; <span class="stock-tag ${statusClass}">${statusLabel}</span></div>
+                </div>
+                ${canReturn ? `<button class="btn btn-outline" onclick="openReturnModal(${o.id})">Request Return</button>` : ""}
+            </div>
+        `;
+    }).join("");
+}
+
+function toggleOrdersDrawer() {
+    const drawer = document.getElementById("ordersDrawer");
+    drawer.classList.toggle("open");
+    if (drawer.classList.contains("open")) {
+        fetchOrders();
+    }
+}
+
+let returnOrderId = null;
+
+function openReturnModal(orderId) {
+    returnOrderId = orderId;
+    document.getElementById("returnReason").value = "";
+    document.getElementById("returnComment").value = "";
+    document.getElementById("returnModal").classList.add("open");
+}
+
+function closeReturnModal() {
+    document.getElementById("returnModal").classList.remove("open");
+    returnOrderId = null;
+}
+
+async function submitReturnRequest(event) {
+    event.preventDefault();
+    if (!returnOrderId) return;
+    const reason = document.getElementById("returnReason").value;
+    const comment = document.getElementById("returnComment").value;
+
+    try {
+        const res = await fetch(`${API_URL}/orders/${returnOrderId}/return`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${currentToken}`,
+            },
+            body: JSON.stringify({ reason: reason, comment: comment || null }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast(`Return request submitted for Order #${returnOrderId}`, "success");
+            closeReturnModal();
+            await fetchOrders();
+        } else {
+            showToast(data.detail || "Could not submit return request", "danger");
         }
     } catch (e) {
         console.error(e);

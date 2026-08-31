@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smart E-Commerce — Premium Full-Stack Platform</title>
+    <title>Smart E-Commerce â€” Premium Full-Stack Platform</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -15,7 +15,7 @@
     <header class="header">
         <div class="header-content">
             <a href="#" class="brand">
-                <div class="brand-badge">⚡</div>
+                <div class="brand-badge">âš¡</div>
                 <span>SmartCommerce</span>
             </a>
 
@@ -32,20 +32,24 @@
                 <!-- Notifications Button -->
                 <div class="notif-btn-wrapper">
                     <button class="icon-btn" onclick="toggleNotifications()" title="Notifications">
-                        🔔
+                        ðŸ””
                         <span id="notifBadge" class="badge-count hidden">0</span>
                     </button>
                 </div>
 
                 <!-- Cart Button -->
                 <button class="cart-btn" onclick="toggleCartDrawer()">
-                    🛒 Cart
+                    ðŸ›’ Cart
                     <span id="cartCountBadge" class="badge-count">0</span>
+                </button>
+
+                <button class="cart-btn" onclick="toggleOrdersDrawer()">
+                    Orders
                 </button>
 
                 <!-- Admin Link -->
                 <a href="http://127.0.0.1:8002/admin/dashboard/" target="_blank" class="btn btn-admin">
-                    📊 Admin Panel
+                    ðŸ“Š Admin Panel
                 </a>
             </div>
         </div>
@@ -58,7 +62,7 @@
     <div id="notifDrawer" class="drawer">
         <div class="drawer-header">
             <h3>Live Notifications (WebSocket)</h3>
-            <button class="close-btn" onclick="toggleNotifications()">✕</button>
+            <button class="close-btn" onclick="toggleNotifications()">âœ•</button>
         </div>
         <div id="notifList" class="notif-list">
             <p class="empty-state">No new notifications</p>
@@ -70,7 +74,7 @@
         <!-- Hero Banner -->
         <section class="hero-banner">
             <div class="hero-text">
-                <div class="hero-tag">🔥 Production-Ready E-Commerce Stack</div>
+                <div class="hero-tag">ðŸ”¥ Production-Ready E-Commerce Stack</div>
                 <h1>Smart Catalog & Real-Time Commerce</h1>
                 <p>FastAPI async microservices, Stripe Payments, WebSocket real-time alerts, and Django analytics dashboard.</p>
             </div>
@@ -124,7 +128,7 @@
     <div id="cartDrawer" class="drawer right-drawer">
         <div class="drawer-header">
             <h3>Your Shopping Cart</h3>
-            <button class="close-btn" onclick="toggleCartDrawer()">✕</button>
+            <button class="close-btn" onclick="toggleCartDrawer()">âœ•</button>
         </div>
 
         <div id="cartItemsContainer" class="cart-items-container">
@@ -145,8 +149,19 @@
                 <span id="cartGrandTotal">$0.00</span>
             </div>
             <button id="checkoutBtn" class="btn btn-checkout" onclick="initiateCheckout()">
-                💳 Proceed to Stripe Checkout
+                ðŸ’³ Proceed to Stripe Checkout
             </button>
+        </div>
+    </div>
+
+    <!-- Orders Drawer -->
+    <div id="ordersDrawer" class="drawer right-drawer">
+        <div class="drawer-header">
+            <h3>Your Orders</h3>
+            <button class="close-btn" onclick="toggleOrdersDrawer()">X</button>
+        </div>
+        <div id="ordersListContainer" class="cart-items-container">
+            <p class="empty-state">No orders yet.</p>
         </div>
     </div>
 
@@ -155,7 +170,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modalTitle">Account Login</h3>
-                <button class="close-btn" onclick="closeAuthModal()">✕</button>
+                <button class="close-btn" onclick="closeAuthModal()">âœ•</button>
             </div>
             <form id="authForm" onsubmit="handleAuthSubmit(event)">
                 <div class="form-group" id="nameGroup" style="display: none;">
@@ -173,16 +188,44 @@
                 <button type="submit" class="btn btn-primary btn-block" id="submitAuthBtn">Sign In</button>
             </form>
             <button type="button" class="btn btn-outline btn-block" onclick="loginWithGoogle()" style="margin-top: 10px;">
-                🔵 Sign in with Google
+                ðŸ”µ Sign in with Google
             </button>
             <button type="button" class="btn btn-outline btn-block" onclick="loginWithFacebook()" style="margin-top: 10px;">
-                🔷 Sign in with Facebook
+                ðŸ”· Sign in with Facebook
             </button>
             <div class="modal-footer">
                 <p id="toggleAuthModeText">
                     Don't have an account? <a href="#" onclick="toggleAuthMode(true)">Create one</a>
                 </p>
             </div>
+        </div>
+    </div>
+
+    <!-- Return Request Modal -->
+    <div id="returnModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Request Return</h3>
+                <button class="close-btn" onclick="closeReturnModal()">X</button>
+            </div>
+            <form id="returnForm" onsubmit="submitReturnRequest(event)">
+                <div class="form-group">
+                    <label>Reason</label>
+                    <select id="returnReason" required>
+                        <option value="">Select a reason</option>
+                        <option value="Item arrived damaged">Item arrived damaged</option>
+                        <option value="Wrong item received">Wrong item received</option>
+                        <option value="No longer needed">No longer needed</option>
+                        <option value="Item not as described">Item not as described</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Additional Comments (optional)</label>
+                    <input type="text" id="returnComment" placeholder="Tell us more...">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Submit Return Request</button>
+            </form>
         </div>
     </div>
 

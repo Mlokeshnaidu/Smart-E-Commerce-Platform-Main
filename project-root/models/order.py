@@ -13,6 +13,7 @@ class OrderStatus(str, enum.Enum):
     SHIPPED = "shipped"
     DELIVERED = "delivered"
     CANCELLED = "cancelled"
+    RETURN_REQUESTED = "return_requested"
 
 
 class PaymentStatus(str, enum.Enum):
@@ -41,6 +42,7 @@ class Order(Base):
     user = relationship("User", back_populates="orders")
     items = relationship("OrderItem", back_populates="order", cascade="all, delete-orphan")
     payment = relationship("Payment", back_populates="order", uselist=False)
+    return_requests = relationship("ReturnRequest", back_populates="order", cascade="all, delete-orphan")
 
 
 class OrderItem(Base):
