@@ -49,18 +49,25 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "django_admin.wsgi.application"
 
-# Database Configuration pointing to the shared SQLite database
-db_path = BASE_DIR.parent / "project-root" / "ecommerce.db"
-if not db_path.exists():
-    # Check parent directory fallback
-    alt_db_path = BASE_DIR.parent / "ecommerce.db"
-    if alt_db_path.exists():
-        db_path = alt_db_path
+# Database Configuration pointing to the shared MySQL database
+import os
+from urllib.parse import urlparse
+from dotenv import load_dotenv
+
+_env_path = BASE_DIR.parent / ".env"
+load_dotenv(dotenv_path=_env_path)
+
+_db_url = urlparse(os.getenv("DATABASE_URL", "").replace("mysql+pymysql://", "mysql://"))
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": str(db_path),
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": _db_url.path.lstrip("/"),
+        "USER": _db_url.username,
+        "PASSWORD": __import__("urllib.parse", fromlist=["unquote"]).unquote(_db_url.password),
+        "HOST": _db_url.hostname,
+        "PORT": str(_db_url.port or 3306),
+        "OPTIONS": {"charset": "utf8mb4"},
     }
 }
 

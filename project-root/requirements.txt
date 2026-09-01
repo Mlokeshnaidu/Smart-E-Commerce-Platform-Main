@@ -10,3 +10,7 @@ passlib[bcrypt]
 python-multipart
 httpx
 stripe
+
+pymysql
+
+cryptography
