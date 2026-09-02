@@ -1,678 +1,1037 @@
 {
-	"info": {
-		"_postman_id": "smart-ecommerce-collection-tasks-3-7",
-		"name": "Smart E-Commerce Platform API (Tasks 3 - 7)",
-		"description": "Complete Postman API Collection covering all 5 milestone tasks: Authentication, RBAC, Product Catalog & Cart, Stripe Checkout, Notifications & WebSockets, and Admin Analytics & Reporting.",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-	},
-	"variable": [
-		{
-			"key": "base_url",
-			"value": "http://127.0.0.1:8000",
-			"type": "string"
-		},
-		{
-			"key": "django_url",
-			"value": "http://127.0.0.1:8002",
-			"type": "string"
-		},
-		{
-			"key": "access_token",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "refresh_token",
-			"value": "",
-			"type": "string"
-		},
-		{
-			"key": "admin_access_token",
-			"value": "",
-			"type": "string"
-		}
-	],
-	"item": [
-		{
-			"name": "1. Authentication & RBAC (Task 3)",
-			"item": [
-				{
-					"name": "Register Customer",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"New Customer\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"Password123!\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/register",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "register"]
-						}
-					}
-				},
-				{
-					"name": "Login Customer",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData.access_token) {",
-									"    pm.collectionVariables.set('access_token', jsonData.access_token);",
-									"    pm.collectionVariables.set('refresh_token', jsonData.refresh_token);",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"Password123!\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "login"]
-						}
-					}
-				},
-				{
-					"name": "Login Admin",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"var jsonData = pm.response.json();",
-									"if (jsonData.access_token) {",
-									"    pm.collectionVariables.set('admin_access_token', jsonData.access_token);",
-									"}"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Password123!\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/login",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "login"]
-						}
-					}
-				},
-				{
-					"name": "Refresh Token",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/refresh",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "refresh"]
-						}
-					}
-				},
-				{
-					"name": "Get Current User Profile (Me)",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/auth/me",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "me"]
-						}
-					}
-				},
-				{
-					"name": "Social Login (Auth0 Simulation)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"provider\": \"google-oauth2\",\n  \"access_token\": \"mock_auth0_token\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/social-login",
-							"host": ["{{base_url}}"],
-							"path": ["auth", "social-login"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "2. User Management (Task 3 & 7)",
-			"item": [
-				{
-					"name": "List Users (Admin / Staff)",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{admin_access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/users/",
-							"host": ["{{base_url}}"],
-							"path": ["users", ""]
-						}
-					}
-				},
-				{
-					"name": "Get User By ID",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{admin_access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/users/1",
-							"host": ["{{base_url}}"],
-							"path": ["users", "1"]
-						}
-					}
-				},
-				{
-					"name": "Update User Role (Admin Only)",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{admin_access_token}}",
-								"type": "text"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"Staff Member\",\n  \"role\": \"staff\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/users/2",
-							"host": ["{{base_url}}"],
-							"path": ["users", "2"]
-						}
-					}
-				},
-				{
-					"name": "Deactivate User (Admin Only)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{admin_access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/users/4/deactivate",
-							"host": ["{{base_url}}"],
-							"path": ["users", "4", "deactivate"]
-						}
-					}
-				},
-				{
-					"name": "Activate User (Admin Only)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{admin_access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/users/4/activate",
-							"host": ["{{base_url}}"],
-							"path": ["users", "4", "activate"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "3. Product Catalog & Filters (Task 4)",
-			"item": [
-				{
-					"name": "List All Products",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/products/",
-							"host": ["{{base_url}}"],
-							"path": ["products", ""]
-						}
-					}
-				},
-				{
-					"name": "Filter Products (Category, Price Range, Stock, Popularity)",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/products/?category=Electronics&min_price=100&max_price=1500&in_stock=true&sort_by_popularity=true",
-							"host": ["{{base_url}}"],
-							"path": ["products", ""],
-							"query": [
-								{ "key": "category", "value": "Electronics" },
-								{ "key": "min_price", "value": "100" },
-								{ "key": "max_price", "value": "1500" },
-								{ "key": "in_stock", "value": "true" },
-								{ "key": "sort_by_popularity", "value": "true" }
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Products by Category",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/products/category/Electronics",
-							"host": ["{{base_url}}"],
-							"path": ["products", "category", "Electronics"]
-						}
-					}
-				},
-				{
-					"name": "Get Single Product",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{base_url}}/products/1",
-							"host": ["{{base_url}}"],
-							"path": ["products", "1"]
-						}
-					}
-				},
-				{
-					"name": "Admin Create Product",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{admin_access_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"Wireless Gaming Headset Pro\",\n  \"description\": \"7.1 Surround Sound with ultra-low latency wireless transceiver.\",\n  \"category\": \"Electronics\",\n  \"price\": 149.99,\n  \"stock\": 20,\n  \"images\": [\"https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600\"]\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/products/",
-							"host": ["{{base_url}}"],
-							"path": ["products", ""]
-						}
-					}
-				},
-				{
-					"name": "Admin Update Product",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{admin_access_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"price\": 139.99,\n  \"stock\": 25\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/products/1",
-							"host": ["{{base_url}}"],
-							"path": ["products", "1"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "4. Shopping Cart System (Task 4)",
-			"item": [
-				{
-					"name": "Get User Cart & Totals",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/cart/",
-							"host": ["{{base_url}}"],
-							"path": ["cart", ""]
-						}
-					}
-				},
-				{
-					"name": "Add Product to Cart",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"product_id\": 1,\n  \"quantity\": 1\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/cart/add",
-							"host": ["{{base_url}}"],
-							"path": ["cart", "add"]
-						}
-					}
-				},
-				{
-					"name": "Update Cart Item Quantity",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"product_id\": 1,\n  \"quantity\": 2\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/cart/update",
-							"host": ["{{base_url}}"],
-							"path": ["cart", "update"]
-						}
-					}
-				},
-				{
-					"name": "Remove Item from Cart",
-					"request": {
-						"method": "DELETE",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/cart/remove?product_id=1",
-							"host": ["{{base_url}}"],
-							"path": ["cart", "remove"],
-							"query": [
-								{ "key": "product_id", "value": "1" }
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "5. Checkout & Payments (Task 5)",
-			"item": [
-				{
-					"name": "Initiate Checkout (Create Order & Stripe Session)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/checkout",
-							"host": ["{{base_url}}"],
-							"path": ["checkout"]
-						}
-					}
-				},
-				{
-					"name": "Stripe Webhook Listener (Simulate Payment Completed)",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							},
-							{
-								"key": "stripe-signature",
-								"value": "mock_sig_test"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"type\": \"checkout.session.completed\",\n  \"data\": {\n    \"object\": {\n      \"metadata\": {\n        \"order_id\": \"1\"\n      }\n    }\n  }\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/checkout/webhook",
-							"host": ["{{base_url}}"],
-							"path": ["checkout", "webhook"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "6. Notifications & WebSockets (Task 6)",
-			"item": [
-				{
-					"name": "List User Notifications",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/notifications",
-							"host": ["{{base_url}}"],
-							"path": ["notifications"]
-						}
-					}
-				},
-				{
-					"name": "Mark Notification Read",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{access_token}}"
-							},
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"notification_id\": 1\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/notifications/read",
-							"host": ["{{base_url}}"],
-							"path": ["notifications", "read"]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "7. Admin Analytics & Reporting (Task 7)",
-			"item": [
-				{
-					"name": "FastAPI Analytics Overview",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{admin_access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/admin/analytics/overview",
-							"host": ["{{base_url}}"],
-							"path": ["admin", "analytics", "overview"]
-						}
-					}
-				},
-				{
-					"name": "FastAPI Top Selling Products",
-					"request": {
-						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "Bearer {{admin_access_token}}"
-							}
-						],
-						"url": {
-							"raw": "{{base_url}}/admin/analytics/top-products",
-							"host": ["{{base_url}}"],
-							"path": ["admin", "analytics", "top-products"]
-						}
-					}
-				},
-				{
-					"name": "Django Analytics Dashboard Page",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{django_url}}/admin/dashboard/",
-							"host": ["{{django_url}}"],
-							"path": ["admin", "dashboard", ""]
-						}
-					}
-				},
-				{
-					"name": "Export Orders Report (CSV)",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{django_url}}/admin/reports/export/orders/csv/",
-							"host": ["{{django_url}}"],
-							"path": ["admin", "reports", "export", "orders", "csv", ""]
-						}
-					}
-				},
-				{
-					"name": "Export Orders Report (PDF)",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{django_url}}/admin/reports/export/orders/pdf/",
-							"host": ["{{django_url}}"],
-							"path": ["admin", "reports", "export", "orders", "pdf", ""]
-						}
-					}
-				},
-				{
-					"name": "Export Sales Executive Report (PDF)",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{django_url}}/admin/reports/export/sales/pdf/",
-							"host": ["{{django_url}}"],
-							"path": ["admin", "reports", "export", "sales", "pdf", ""]
-						}
-					}
-				},
-				{
-					"name": "Export User Accounts Report (PDF)",
-					"request": {
-						"method": "GET",
-						"url": {
-							"raw": "{{django_url}}/admin/reports/export/users/pdf/",
-							"host": ["{{django_url}}"],
-							"path": ["admin", "reports", "export", "users", "pdf", ""]
-						}
-					}
-				}
-			]
-		}
-	]
+  "info": {
+    "_postman_id": "smart-ecommerce-collection-tasks-3-7",
+    "name": "Smart E-Commerce Platform API (Tasks 3 - 7)",
+    "description": "Complete Postman API Collection covering all 5 milestone tasks: Authentication, RBAC, Product Catalog & Cart, Stripe Checkout, Notifications & WebSockets, and Admin Analytics & Reporting.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:8000",
+      "type": "string"
+    },
+    {
+      "key": "django_url",
+      "value": "http://127.0.0.1:8002",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_access_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Authentication & RBAC (Task 3)",
+      "item": [
+        {
+          "name": "Register Customer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"New Customer\",\n  \"email\": \"newuser@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/register",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login Customer",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set('access_token', jsonData.access_token);",
+                  "    pm.collectionVariables.set('refresh_token', jsonData.refresh_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"customer@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var jsonData = pm.response.json();",
+                  "if (jsonData.access_token) {",
+                  "    pm.collectionVariables.set('admin_access_token', jsonData.access_token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/refresh",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "refresh"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Current User Profile (Me)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Social Login (Auth0 Simulation)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"google-oauth2\",\n  \"access_token\": \"mock_auth0_token\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/auth/social-login",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "social-login"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. User Management (Task 3 & 7)",
+      "item": [
+        {
+          "name": "List Users (Admin / Staff)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User By ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User Role (Admin Only)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}",
+                "type": "text"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Staff Member\",\n  \"role\": \"staff\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/users/2",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "2"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Deactivate User (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/4/deactivate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "4",
+                "deactivate"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Activate User (Admin Only)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/users/4/activate",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "users",
+                "4",
+                "activate"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Product Catalog & Filters (Task 4)",
+      "item": [
+        {
+          "name": "List All Products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/products/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Filter Products (Category, Price Range, Stock, Popularity)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/products/?category=Electronics&min_price=100&max_price=1500&in_stock=true&sort_by_popularity=true",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "category",
+                  "value": "Electronics"
+                },
+                {
+                  "key": "min_price",
+                  "value": "100"
+                },
+                {
+                  "key": "max_price",
+                  "value": "1500"
+                },
+                {
+                  "key": "in_stock",
+                  "value": "true"
+                },
+                {
+                  "key": "sort_by_popularity",
+                  "value": "true"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Products by Category",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/products/category/Electronics",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "category",
+                "Electronics"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Single Product",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/products/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin Create Product",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Wireless Gaming Headset Pro\",\n  \"description\": \"7.1 Surround Sound with ultra-low latency wireless transceiver.\",\n  \"category\": \"Electronics\",\n  \"price\": 149.99,\n  \"stock\": 20,\n  \"images\": [\"https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600\"]\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Admin Update Product",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 139.99,\n  \"stock\": 25\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/products/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete Product",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "1"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Upload Product Images",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/products/1/images",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "products",
+                "1",
+                "images"
+              ]
+            },
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Shopping Cart System (Task 4)",
+      "item": [
+        {
+          "name": "Get User Cart & Totals",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cart/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cart",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Add Product to Cart",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": 1,\n  \"quantity\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cart/add",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cart",
+                "add"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Cart Item Quantity",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product_id\": 1,\n  \"quantity\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/cart/update",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cart",
+                "update"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Remove Item from Cart",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/cart/remove?product_id=1",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "cart",
+                "remove"
+              ],
+              "query": [
+                {
+                  "key": "product_id",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Checkout & Payments (Task 5)",
+      "item": [
+        {
+          "name": "Initiate Checkout (Create Order & Stripe Session)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/checkout",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "checkout"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Stripe Webhook Listener (Simulate Payment Completed)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "stripe-signature",
+                "value": "mock_sig_test"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"checkout.session.completed\",\n  \"data\": {\n    \"object\": {\n      \"metadata\": {\n        \"order_id\": \"1\"\n      }\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/checkout/webhook",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "checkout",
+                "webhook"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Notifications & WebSockets (Task 6)",
+      "item": [
+        {
+          "name": "List User Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/notifications",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Mark Notification Read",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notification_id\": 1\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/notifications/read",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "notifications",
+                "read"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Admin Analytics & Reporting (Task 7)",
+      "item": [
+        {
+          "name": "FastAPI Analytics Overview",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/analytics/overview",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "overview"
+              ]
+            }
+          }
+        },
+        {
+          "name": "FastAPI Top Selling Products",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/analytics/top-products",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "analytics",
+                "top-products"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Django Analytics Dashboard Page",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{django_url}}/admin/dashboard/",
+              "host": [
+                "{{django_url}}"
+              ],
+              "path": [
+                "admin",
+                "dashboard",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Export Orders Report (CSV)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{django_url}}/admin/reports/export/orders/csv/",
+              "host": [
+                "{{django_url}}"
+              ],
+              "path": [
+                "admin",
+                "reports",
+                "export",
+                "orders",
+                "csv",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Export Orders Report (PDF)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{django_url}}/admin/reports/export/orders/pdf/",
+              "host": [
+                "{{django_url}}"
+              ],
+              "path": [
+                "admin",
+                "reports",
+                "export",
+                "orders",
+                "pdf",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Export Sales Executive Report (PDF)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{django_url}}/admin/reports/export/sales/pdf/",
+              "host": [
+                "{{django_url}}"
+              ],
+              "path": [
+                "admin",
+                "reports",
+                "export",
+                "sales",
+                "pdf",
+                ""
+              ]
+            }
+          }
+        },
+        {
+          "name": "Export User Accounts Report (PDF)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{django_url}}/admin/reports/export/users/pdf/",
+              "host": [
+                "{{django_url}}"
+              ],
+              "path": [
+                "admin",
+                "reports",
+                "export",
+                "users",
+                "pdf",
+                ""
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Returns & Refunds (Customer + Admin)",
+      "item": [
+        {
+          "name": "Request Return (Customer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders/1/return",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "orders",
+                "1",
+                "return"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Item arrived damaged\",\n  \"comment\": \"Packaging was torn\"\n}"
+            }
+          }
+        },
+        {
+          "name": "List Return Requests (Admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/returns",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "returns"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approve Return (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/returns/1/approve",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "returns",
+                "1",
+                "approve"
+              ]
+            }
+          }
+        },
+        {
+          "name": "Reject Return (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/admin/returns/1/reject",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "admin",
+                "returns",
+                "1",
+                "reject"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
 }
