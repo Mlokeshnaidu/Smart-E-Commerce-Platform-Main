@@ -79,14 +79,8 @@ def approve_return(
     for item in order.items:
         item.product.stock += item.quantity
 
-    payment = order.payment
-    if payment:
-        refund = create_refund(payment.transaction_id, payment.amount)
-        payment.status = PaymentTransactionStatus.REFUNDED
-
     return_request.status = ReturnStatus.APPROVED
-    order.order_status = OrderStatus.REFUNDED
-    order.payment_status = PaymentStatus.REFUNDED
+    order.order_status = OrderStatus.RETURNED
 
     db.add(
         Notification(
@@ -95,13 +89,21 @@ def approve_return(
             message=f"Your return for Order #{order.id} has been approved.",
         )
     )
-    db.add(
-        Notification(
-            user_id=order.user_id,
-            type="refund_completed",
-            message=f"Refund of ${payment.amount:.2f} completed for Order #{order.id}." if payment else f"Refund completed for Order #{order.id}.",
+
+    payment = order.payment
+    if payment:
+        refund = create_refund(payment.transaction_id, payment.amount)
+        payment.status = PaymentTransactionStatus.REFUNDED
+        order.order_status = OrderStatus.REFUNDED
+        order.payment_status = PaymentStatus.REFUNDED
+
+        db.add(
+            Notification(
+                user_id=order.user_id,
+                type="refund_completed",
+                message=f"Refund of ${payment.amount:.2f} completed for Order #{order.id}.",
+            )
         )
-    )
 
     db.commit()
     db.refresh(return_request)
