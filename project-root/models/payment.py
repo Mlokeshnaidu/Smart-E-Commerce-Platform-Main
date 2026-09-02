@@ -11,6 +11,7 @@ class PaymentTransactionStatus(str, enum.Enum):
     PENDING = "pending"
     SUCCEEDED = "succeeded"
     FAILED = "failed"
+    REFUNDED = "refunded"
 
 
 class Payment(Base):

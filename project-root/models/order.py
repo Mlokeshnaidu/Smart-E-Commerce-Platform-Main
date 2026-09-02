@@ -14,6 +14,8 @@ class OrderStatus(str, enum.Enum):
     DELIVERED = "delivered"
     CANCELLED = "cancelled"
     RETURN_REQUESTED = "return_requested"
+    RETURNED = "returned"
+    REFUNDED = "refunded"
 
 
 class PaymentStatus(str, enum.Enum):
