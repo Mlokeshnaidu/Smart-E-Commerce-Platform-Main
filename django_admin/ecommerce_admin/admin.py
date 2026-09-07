@@ -1,11 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
-from .models import User, Product, Cart, CartItem, Order, OrderItem, Payment, Notification
-try:
-    from .emails import send_shipping_update_email
-except ImportError:
-    def send_shipping_update_email(*args, **kwargs):
-        pass
+from .models import User, Product, Cart, CartItem, Order, OrderItem, Payment, Notification, Review
+from .emails import send_shipping_update_email
 
 
 @admin.register(User)
@@ -176,7 +172,6 @@ class OrderAdmin(admin.ModelAdmin):
                 pass
         self.message_user(request, f"{queryset.count()} order(s) marked as Shipped.")
 
-
     @admin.action(description="Mark status: Delivered")
     def mark_as_delivered(self, request, queryset):
         for order in queryset:
@@ -192,7 +187,6 @@ class OrderAdmin(admin.ModelAdmin):
             except Exception:
                 pass
         self.message_user(request, f"{queryset.count()} order(s) marked as Delivered.")
-
 
     @admin.action(description="Mark status: Cancelled")
     def mark_as_cancelled(self, request, queryset):
@@ -271,3 +265,46 @@ class CartAdmin(admin.ModelAdmin):
     def items_count(self, obj):
         return obj.items.count()
     items_count.short_description = "Cart Items"
+
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    list_display = ("id", "user_email", "product_id", "rating", "status_badge", "comment_preview", "created_at")
+    list_filter = ("status", "rating", "created_at")
+    search_fields = ("comment", "user__email")
+    ordering = ("-id",)
+    actions = ["approve_reviews", "reject_reviews"]
+
+    def user_email(self, obj):
+        return obj.user.email if obj.user else "N/A"
+    user_email.short_description = "User"
+
+    def comment_preview(self, obj):
+        if not obj.comment:
+            return ""
+        return obj.comment[:60] + "..." if len(obj.comment) > 60 else obj.comment
+    comment_preview.short_description = "Comment"
+
+    def status_badge(self, obj):
+        colors = {
+            "approved": "#198754",
+            "pending": "#ffc107; color: #212529",
+            "rejected": "#dc3545",
+        }
+        color = colors.get(obj.status, "#6c757d")
+        return format_html(
+            '<span style="background-color: {}; color: white; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 11px;">{}</span>',
+            color,
+            obj.status.upper(),
+        )
+    status_badge.short_description = "Status"
+
+    @admin.action(description="Approve selected reviews")
+    def approve_reviews(self, request, queryset):
+        count = queryset.update(status="approved")
+        self.message_user(request, f"{count} review(s) approved.")
+
+    @admin.action(description="Reject selected reviews")
+    def reject_reviews(self, request, queryset):
+        count = queryset.update(status="rejected")
+        self.message_user(request, f"{count} review(s) rejected.")

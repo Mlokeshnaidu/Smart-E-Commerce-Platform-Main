@@ -9,4 +9,5 @@ static/uploads/
 *.log
 project-root/static/uploads/
 docker-compose.yml.bak
-frontend/fix_stray.py
+frontend/fix_stray.py*_export.csv
+*_export.pdf

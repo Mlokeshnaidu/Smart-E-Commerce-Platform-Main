@@ -169,3 +169,19 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"[{self.type}] {self.user.email if self.user else 'User'}: {self.message[:30]}"
+
+class Review(models.Model):
+    id = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, db_column="user_id")
+    product_id = models.IntegerField()
+    rating = models.IntegerField()
+    comment = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, default="pending")
+    created_at = models.DateTimeField()
+
+    class Meta:
+        db_table = "reviews"
+        managed = False
+
+    def __str__(self):
+        return f"Review #{self.id} - {self.rating}/5"
