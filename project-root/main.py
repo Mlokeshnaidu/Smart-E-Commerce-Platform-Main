@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from core.database import Base, engine
-from routes import auth, users, products, cart, checkout, notifications, admin, returns
+from routes import auth, users, products, cart, checkout, notifications, admin, returns, reviews
 
 Base.metadata.create_all(bind=engine)
 
@@ -31,6 +31,7 @@ app.include_router(checkout.router)
 app.include_router(notifications.router)
 app.include_router(admin.router)
 app.include_router(returns.router)
+app.include_router(reviews.router)
 
 
 @app.get("/health")
