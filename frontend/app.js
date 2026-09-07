@@ -180,7 +180,7 @@ function renderProducts(products) {
         const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600";
         const stockClass = p.stock <= 5 ? "low-stock" : "in-stock";
         const stockText = p.stock === 0 ? "Out of Stock" : (p.stock <= 5 ? `Low Stock (${p.stock})` : `In Stock (${p.stock})`);
-        
+
         return `
             <div class="product-card">
                 <img src="${imgUrl}" alt="${p.name}" class="product-image" onerror="this.src='https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600'">
@@ -197,6 +197,9 @@ function renderProducts(products) {
                             + Add
                         </button>
                     </div>
+                    <button class="btn btn-outline btn-block" style="margin-top: 8px;" onclick="openReviewsModal(${p.id})">
+                        ⭐ Reviews
+                    </button>
                 </div>
             </div>
         `;
@@ -592,6 +595,99 @@ async function submitReturnRequest(event) {
             await fetchOrders();
         } else {
             showToast(data.detail || "Could not submit return request", "danger");
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// Reviews
+let reviewProductId = null;
+
+function renderStars(rating) {
+    const full = Math.round(rating);
+    let stars = "";
+    for (let i = 1; i <= 5; i++) {
+        stars += i <= full ? "\u2b50" : "\u2606";
+    }
+    return stars;
+}
+
+async function openReviewsModal(productId) {
+    reviewProductId = productId;
+    document.getElementById("reviewRating").value = "";
+    document.getElementById("reviewComment").value = "";
+    document.getElementById("reviewsModal").classList.add("open");
+    await fetchProductReviews(productId);
+}
+
+function closeReviewsModal() {
+    document.getElementById("reviewsModal").classList.remove("open");
+    reviewProductId = null;
+}
+
+async function fetchProductReviews(productId) {
+    const summaryEl = document.getElementById("reviewsSummary");
+    const listEl = document.getElementById("reviewsList");
+    summaryEl.innerHTML = "Loading...";
+    listEl.innerHTML = "";
+    try {
+        const res = await fetch(`${API_URL}/products/${productId}/reviews`);
+        const data = await res.json();
+
+        summaryEl.innerHTML = `
+            <div style="font-size: 24px;">${renderStars(data.average_rating)}</div>
+            <div style="color: #666;">${data.average_rating.toFixed(1)} average \u00b7 ${data.total_reviews} review${data.total_reviews === 1 ? "" : "s"}</div>
+        `;
+
+        if (data.reviews.length === 0) {
+            listEl.innerHTML = `<p class="empty-state">No reviews yet. Be the first to review this product!</p>`;
+            return;
+        }
+
+        const topReviews = [...data.reviews].sort((a, b) => b.rating - a.rating).slice(0, 5);
+
+        listEl.innerHTML = topReviews.map(r => `
+            <div style="border-bottom: 1px solid #eee; padding: 10px 0;">
+                <div>${renderStars(r.rating)}</div>
+                ${r.comment ? `<p style="margin: 4px 0;">${r.comment}</p>` : ""}
+                <small style="color: #999;">${new Date(r.created_at).toLocaleDateString()}</small>
+            </div>
+        `).join("");
+    } catch (e) {
+        console.error("Failed to load reviews:", e);
+        summaryEl.innerHTML = "Could not load reviews.";
+    }
+}
+
+async function submitReview(event) {
+    event.preventDefault();
+    if (!reviewProductId) return;
+    if (!currentToken) {
+        showToast("Please log in to leave a review", "danger");
+        openAuthModal();
+        return;
+    }
+
+    const rating = parseInt(document.getElementById("reviewRating").value, 10);
+    const comment = document.getElementById("reviewComment").value;
+
+    try {
+        const res = await fetch(`${API_URL}/reviews`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${currentToken}`,
+            },
+            body: JSON.stringify({ product_id: reviewProductId, rating: rating, comment: comment || null }),
+        });
+        const data = await res.json();
+        if (res.ok) {
+            showToast("Review submitted!", "success");
+            document.getElementById("reviewForm").reset();
+            await fetchProductReviews(reviewProductId);
+        } else {
+            showToast(data.detail || "Could not submit review", "danger");
         }
     } catch (e) {
         console.error(e);
