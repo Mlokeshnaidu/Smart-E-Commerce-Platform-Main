@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from core.database import Base, engine
-from routes import auth, users, products, cart, checkout, notifications, admin, returns, reviews
+from routes import auth, users, products, cart, checkout, notifications, admin, returns, reviews, recommendations
 
 Base.metadata.create_all(bind=engine)
 
@@ -25,6 +25,7 @@ app.mount("/static", StaticFiles(directory=str(_STATIC_DIR)), name="static")
 
 app.include_router(auth.router)
 app.include_router(users.router)
+app.include_router(recommendations.router)
 app.include_router(products.router)
 app.include_router(cart.router)
 app.include_router(checkout.router)

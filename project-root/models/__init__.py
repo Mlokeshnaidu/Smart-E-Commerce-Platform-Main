@@ -13,3 +13,4 @@ from models import payment
 from models import notification
 from models import return_request
 from models import review
+from models import product_view

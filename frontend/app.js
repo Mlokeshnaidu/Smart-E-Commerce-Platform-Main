@@ -79,6 +79,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     await fetchProducts();
     await fetchCart();
+    await fetchRecommendations();
+    await fetchTrending();
+    await fetchYouMayAlsoLike();
     initWebSocket();
 });
 
@@ -619,6 +622,7 @@ async function openReviewsModal(productId) {
     document.getElementById("reviewComment").value = "";
     document.getElementById("reviewsModal").classList.add("open");
     await fetchProductReviews(productId);
+    await fetchSimilarProducts(productId);
 }
 
 function closeReviewsModal() {
@@ -691,5 +695,96 @@ async function submitReview(event) {
         }
     } catch (e) {
         console.error(e);
+    }
+}
+
+// Recommendations
+function renderMiniGrid(containerId, products) {
+    const grid = document.getElementById(containerId);
+    if (!grid) return;
+    if (!products || products.length === 0) {
+        grid.innerHTML = `<p class="empty-state" style="grid-column: 1 / -1;">Nothing to show yet.</p>`;
+        return;
+    }
+    grid.innerHTML = products.map(p => {
+        const imgUrl = (p.images && p.images.length > 0) ? p.images[0] : "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600";
+        return `
+            <div class="product-card">
+                <img src="${imgUrl}" alt="${p.name}" class="product-image" onerror="this.src='https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600'">
+                <div class="product-body">
+                    <span class="product-category">${p.category || 'Product'}</span>
+                    <h4 class="product-title">${p.name}</h4>
+                    <div class="product-footer">
+                        <div class="product-price">$${p.price.toFixed(2)}</div>
+                        <button class="btn-add-cart" onclick="addToCart(${p.id})">+ Add</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+async function fetchRecommendations() {
+    if (!currentUser) {
+        document.getElementById("recommendedGrid").innerHTML = `<p class="empty-state" style="grid-column: 1 / -1;">Log in to see personalized picks.</p>`;
+        return;
+    }
+    try {
+        const res = await fetch(`${API_URL}/recommendations/${currentUser.id}`, {
+            headers: { "Authorization": `Bearer ${currentToken}` }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            renderMiniGrid("recommendedGrid", data);
+        }
+    } catch (e) {
+        console.error("Failed to load recommendations:", e);
+    }
+}
+
+async function fetchTrending() {
+    try {
+        const res = await fetch(`${API_URL}/products/trending`);
+        if (res.ok) {
+            const data = await res.json();
+            renderMiniGrid("trendingGrid", data);
+        }
+    } catch (e) {
+        console.error("Failed to load trending:", e);
+    }
+}
+
+async function fetchSimilarProducts(productId) {
+    const grid = document.getElementById("similarGrid");
+    if (!grid) return;
+    try {
+        const res = await fetch(`${API_URL}/products/${productId}/similar`);
+        if (res.ok) {
+            const data = await res.json();
+            renderMiniGrid("similarGrid", data);
+        }
+    } catch (e) {
+        console.error("Failed to load similar products:", e);
+    }
+}
+
+async function fetchYouMayAlsoLike() {
+    const grid = document.getElementById("youMayAlsoLikeGrid");
+    if (!grid) return;
+    if (!currentUser) {
+        grid.innerHTML = `<p class="empty-state" style="grid-column: 1 / -1;">Log in to see picks based on what you've viewed.</p>`;
+        return;
+    }
+    try {
+        const res = await fetch(`${API_URL}/recommendations/${currentUser.id}`, {
+            headers: { "Authorization": `Bearer ${currentToken}` }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            const shuffled = [...data].reverse();
+            renderMiniGrid("youMayAlsoLikeGrid", shuffled);
+        }
+    } catch (e) {
+        console.error("Failed to load You May Also Like:", e);
     }
 }

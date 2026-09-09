@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
@@ -34,3 +34,17 @@ def get_current_user(
             detail="This account has been deactivated",
         )
     return user
+
+def get_optional_user(
+    authorization: str = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    if not authorization or not authorization.startswith("Bearer "):
+        return None
+    token = authorization.split(" ", 1)[1]
+    try:
+        payload = decode_token(token)
+        user_id = int(payload.get("sub"))
+    except Exception:
+        return None
+    return db.query(User).filter(User.id == user_id).first()
