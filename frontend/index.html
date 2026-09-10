@@ -15,7 +15,7 @@
     <header class="header">
         <div class="header-content">
             <a href="#" class="brand">
-                <div class="brand-badge">âš¡</div>
+                <div class="brand-badge">SC</div>
                 <span>SmartCommerce</span>
             </a>
 
@@ -32,14 +32,14 @@
                 <!-- Notifications Button -->
                 <div class="notif-btn-wrapper">
                     <button class="icon-btn" onclick="toggleNotifications()" title="Notifications">
-                        ðŸ””
+                        Notifications
                         <span id="notifBadge" class="badge-count hidden">0</span>
                     </button>
                 </div>
 
                 <!-- Cart Button -->
                 <button class="cart-btn" onclick="toggleCartDrawer()">
-                    ðŸ›’ Cart
+                    Cart
                     <span id="cartCountBadge" class="badge-count">0</span>
                 </button>
 
@@ -62,7 +62,7 @@
     <div id="notifDrawer" class="drawer">
         <div class="drawer-header">
             <h3>Live Notifications (WebSocket)</h3>
-            <button class="close-btn" onclick="toggleNotifications()">âœ•</button>
+            <button class="close-btn" onclick="toggleNotifications()">X</button>
         </div>
         <div id="notifList" class="notif-list">
             <p class="empty-state">No new notifications</p>
@@ -146,7 +146,7 @@
     <div id="cartDrawer" class="drawer right-drawer">
         <div class="drawer-header">
             <h3>Your Shopping Cart</h3>
-            <button class="close-btn" onclick="toggleCartDrawer()">x</button>
+            <button class="close-btn" onclick="toggleCartDrawer()">X</button>
         </div>
 
         <div id="cartItemsContainer" class="cart-items-container">
@@ -167,7 +167,7 @@
                 <span id="cartGrandTotal">$0.00</span>
             </div>
             <button id="checkoutBtn" class="btn btn-checkout" onclick="initiateCheckout()">
-                ðŸ’³ Proceed to Stripe Checkout
+                Proceed to Stripe Checkout
             </button>
         </div>
     </div>
@@ -188,7 +188,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h3 id="modalTitle">Account Login</h3>
-                <button class="close-btn" onclick="closeAuthModal()">âœ•</button>
+                <button class="close-btn" onclick="closeAuthModal()">X</button>
             </div>
             <form id="authForm" onsubmit="handleAuthSubmit(event)">
                 <div class="form-group" id="nameGroup" style="display: none;">
@@ -206,10 +206,10 @@
                 <button type="submit" class="btn btn-primary btn-block" id="submitAuthBtn">Sign In</button>
             </form>
             <button type="button" class="btn btn-outline btn-block" onclick="loginWithGoogle()" style="margin-top: 10px;">
-                ðŸ”µ Sign in with Google
+                Sign in with Google
             </button>
             <button type="button" class="btn btn-outline btn-block" onclick="loginWithFacebook()" style="margin-top: 10px;">
-                ðŸ”· Sign in with Facebook
+                Sign in with Facebook
             </button>
             <div class="modal-footer">
                 <p id="toggleAuthModeText">
